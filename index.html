@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Support Lupe's 2am</title>
+<style>
+  :root { --bg:#14110f; --card:#1f1a17; --text:#f5efe6; --muted:#b9ada0; --accent:#e4572e; --line:#3a312b; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font:16px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; }
+  main { max-width:520px; margin:0 auto; padding:28px 18px 40px; }
+  h1 { font-size:24px; line-height:1.25; margin:0 0 6px; }
+  p.sub { color:var(--muted); margin:0 0 20px; }
+  .letter { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:16px; white-space:pre-wrap; margin:0 0 20px; font-size:15px; }
+  .btn { display:block; width:100%; text-align:center; text-decoration:none; border:0; border-radius:14px; padding:18px 16px; font-size:18px; font-weight:700; cursor:pointer; margin:0 0 12px; }
+  .primary { background:var(--accent); color:#fff; }
+  .secondary { background:transparent; color:var(--text); border:1px solid var(--line); font-size:15px; font-weight:600; padding:14px; }
+  .small { color:var(--muted); font-size:13px; margin-top:18px; }
+  .ok { color:#7bd88f; font-size:14px; min-height:20px; text-align:center; }
+</style>
+</head>
+<body>
+<main>
+  <h1 id="hi">Thanks for backing Lupe's 🙏</h1>
+  <p class="sub">We're applying to trade until 2am. Your letter is written and ready to go. Tap the button and hit <b>Send</b>.</p>
+
+  <div class="letter" id="letter"></div>
+
+  <a class="btn primary" id="send" href="#">Send my letter of support</a>
+  <a class="btn secondary" id="gmail" href="#" target="_blank" rel="noopener">Use Gmail instead</a>
+  <button class="btn secondary" id="copy" type="button">Copy letter</button>
+  <div class="ok" id="ok"></div>
+
+  <p class="small">It goes to Benny at Lupe's (benny@seshmafia.com.au) with the subject "Lupe's extended trading hours". Feel free to edit it before sending. If the button doesn't open your email, tap "Copy letter" and email it to that address.</p>
+</main>
+<script>
+(function () {
+  var TO = "benny@seshmafia.com.au";
+  var SUBJECT = "Lupe's extended trading hours";
+  var DEFAULT = "I love Lupe's. It's one of the best little bars in the city, and the night always ends too soon at midnight. I'd love to see it open until 2am.";
+
+  function b64urlDecode(s) {
+    try {
+      s = s.replace(/-/g, "+").replace(/_/g, "/");
+      while (s.length % 4) s += "=";
+      var bin = atob(s), bytes = new Uint8Array(bin.length);
+      for (var i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+      return new TextDecoder("utf-8").decode(bytes);
+    } catch (e) { return ""; }
+  }
+  var params = {};
+  (location.hash.replace(/^#/, "") || location.search.replace(/^\?/, "")).split("&").forEach(function (kv) {
+    var i = kv.indexOf("="); if (i > 0) params[kv.slice(0, i)] = kv.slice(i + 1);
+  });
+  var name = params.n ? decodeURIComponent(params.n) : "";
+  var letter = params.l ? b64urlDecode(params.l) : "";
+  if (!letter) letter = DEFAULT + (name ? "\n\n" + name : "");
+
+  if (name) document.getElementById("hi").textContent = "Hey " + name.split(" ")[0] + ", thanks for backing Lupe's 🙏";
+  document.getElementById("letter").textContent = letter;
+
+  var mailto = "mailto:" + TO + "?subject=" + encodeURIComponent(SUBJECT) + "&body=" + encodeURIComponent(letter);
+  document.getElementById("send").href = mailto;
+  document.getElementById("gmail").href = "https://mail.google.com/mail/?view=cm&fs=1&to=" + encodeURIComponent(TO) +
+    "&su=" + encodeURIComponent(SUBJECT) + "&body=" + encodeURIComponent(letter);
+
+  document.getElementById("copy").addEventListener("click", function () {
+    var ok = document.getElementById("ok");
+    var text = letter;
+    function done() { ok.textContent = "Copied. Paste it into an email to " + TO; }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done, fallback);
+    } else fallback();
+    function fallback() {
+      var ta = document.createElement("textarea"); ta.value = text; document.body.appendChild(ta);
+      ta.select(); try { document.execCommand("copy"); done(); } catch (e) { ok.textContent = "Press and hold the letter above to copy it."; }
+      document.body.removeChild(ta);
+    }
+  });
+})();
+</script>
+</body>
+</html>
